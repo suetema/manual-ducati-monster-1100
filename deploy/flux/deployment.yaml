@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manual-ducati-monster-1100
+  namespace: manual-ducati-monster-1100
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manual-ducati-monster-1100
+  template:
+    metadata:
+      labels:
+        app: manual-ducati-monster-1100
+    spec:
+      containers:
+        - name: manual
+          image: ghcr.io/suetema/manual-ducati-monster-1100:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault

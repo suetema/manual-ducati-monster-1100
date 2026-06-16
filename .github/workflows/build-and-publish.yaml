@@ -1,0 +1,74 @@
+name: Build and publish manual image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".dockerignore"
+      - "Dockerfile"
+      - "docker/**"
+      - "site/**"
+      - "Ducati_Monster_1100_Workshop_Manual.pdf"
+      - ".github/workflows/build-and-publish.yaml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: suetema/manual-ducati-monster-1100
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set image tag
+        id: vars
+        run: |
+          tag="$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Update deployment image
+        run: |
+          sed -i "s|image: .*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}|" deploy/flux/deployment.yaml
+
+      - name: Commit deployment update
+        run: |
+          if git diff --quiet deploy/flux/deployment.yaml; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/flux/deployment.yaml
+          git commit -m "chore: deploy image ${{ steps.vars.outputs.tag }}"
+          git push

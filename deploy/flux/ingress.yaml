@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: manual-ducati-monster-1100
+  namespace: manual-ducati-monster-1100
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: nginx
+  tls:
+    - secretName: ducati-manual-tls
+      hosts:
+        - ducati-manual.suetens.cc
+  rules:
+    - host: ducati-manual.suetens.cc
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: manual-ducati-monster-1100
+                port:
+                  number: 80
