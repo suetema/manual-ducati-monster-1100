@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: manual
-          image: ghcr.io/suetema/manual-ducati-monster-1100:latest
+          image: ghcr.io/suetema/manual-ducati-monster-1100:20260616-120223-47d3522
           imagePullPolicy: Always
           ports:
             - name: http
