@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-BASE_URL="https://www.vegamoreno.net/Ducati/Workshop_manual/USA"
+BASE_URL="${BASE_URL:-http://127.0.0.1:8080/Ducati/Workshop_manual/USA}"
 OUTDIR="$HOME/ducati-manual/pages"
 CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 

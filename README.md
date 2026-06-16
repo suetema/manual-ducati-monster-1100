@@ -18,6 +18,8 @@ docker run --rm -p 8080:8080 manual-ducati-monster-1100
 
 Then open `http://localhost:8080/`.
 
+If you use [`generate.sh`](./generate.sh), it defaults to rendering from a locally served copy at `http://127.0.0.1:8080/Ducati/Workshop_manual/USA`. Override `BASE_URL` if needed.
+
 ## Flux manifests
 
 Kubernetes manifests for Flux live under [`deploy/flux`](./deploy/flux).
